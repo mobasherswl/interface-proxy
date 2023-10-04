@@ -14,11 +14,7 @@ public class DefaultProxyInvocationHandler implements ProxyInvocationHandler {
     public Object invoke(final Object proxy, final Method method, final Object[] args) {
         final Class<?> clazz = getInterface(proxy);
 
-        if (clazz != method.getDeclaringClass()) {
-            return null;
-        }
-
-        return proxyMethodHandler.invoke(clazz, method, args);
+        return proxyMethodHandler.invoke(new ProxyParam(clazz, method, args));
     }
 
     private Class<?> getInterface(final Object proxy) {
