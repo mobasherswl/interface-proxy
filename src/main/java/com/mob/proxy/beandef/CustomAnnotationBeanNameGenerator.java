@@ -1,10 +1,9 @@
 package com.mob.proxy.beandef;
 
-import org.springframework.context.annotation.AnnotationBeanNameGenerator;
-
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 
 public class CustomAnnotationBeanNameGenerator extends AnnotationBeanNameGenerator {
     private final Class<? extends Annotation> annotationType;
@@ -13,9 +12,10 @@ public class CustomAnnotationBeanNameGenerator extends AnnotationBeanNameGenerat
         this.annotationType = annotationType;
     }
 
-    protected boolean isStereotypeWithNameValue(final String annotationType,
-                                                final Set<String> metaAnnotationTypes,
-                                                final Map<String, Object> attributes) {
+    protected boolean isStereotypeWithNameValue(
+            final String annotationType,
+            final Set<String> metaAnnotationTypes,
+            final Map<String, Object> attributes) {
 
         boolean isStereotype = annotationType.equals(this.annotationType.getClass().getName());
 

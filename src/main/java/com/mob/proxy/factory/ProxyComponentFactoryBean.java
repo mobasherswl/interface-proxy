@@ -15,8 +15,9 @@ public class ProxyComponentFactoryBean implements FactoryBean<Object>, BeanFacto
     protected final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
     private BeanFactory beanFactory;
 
-    public ProxyComponentFactoryBean(final AnnotationMetadata metadata,
-                                     final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+    public ProxyComponentFactoryBean(
+            final AnnotationMetadata metadata,
+            final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         this.metadata = metadata;
         this.objectType = ClassUtils.resolveClassName(metadata.getClassName(), null);
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
@@ -32,7 +33,8 @@ public class ProxyComponentFactoryBean implements FactoryBean<Object>, BeanFacto
         final Class<?> interfaceClass = ClassUtils.resolveClassName(metadata.getClassName(), null);
         final ProxyComponent proxyComponent = interfaceClass.getAnnotation(ProxyComponent.class);
         final String handlerBeanName = proxyComponent.handlerName();
-        final ProxyMethodHandler proxyMethodHandler=  getBeanFactory().getBean(handlerBeanName, ProxyMethodHandler.class);
+        final ProxyMethodHandler proxyMethodHandler =
+                getBeanFactory().getBean(handlerBeanName, ProxyMethodHandler.class);
 
         return proxyInvocationHandlerFactory.createProxy(interfaceClass, proxyMethodHandler);
     }
