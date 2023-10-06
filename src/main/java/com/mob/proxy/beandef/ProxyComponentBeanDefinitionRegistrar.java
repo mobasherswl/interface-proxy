@@ -2,41 +2,55 @@ package com.mob.proxy.beandef;
 
 import com.mob.proxy.annotation.EnableInterfaceProxy;
 import com.mob.proxy.annotation.ProxyComponent;
-import java.lang.annotation.Annotation;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.type.AnnotationMetadata;
 
-public class ProxyComponentBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+public class ProxyComponentBeanDefinitionRegistrar
+        implements ImportBeanDefinitionRegistrar, BeanFactoryAware {
+    private BeanFactory beanFactory;
+
     @Override
     public void registerBeanDefinitions(
             final AnnotationMetadata configMetadata, final BeanDefinitionRegistry registry) {
-        configMetadata.getAnnotations().stream(getAnnotationType())
+        configMetadata.getAnnotations().stream(getFeatureEnableAnnotationType())
                 .forEach(
                         annotation -> {
-                            String[] packageNames = getPackageNames(annotation);
+                            final String[] packageNames = getPackageNames(annotation);
 
-                            getScanner(registry, getProxyComponentAnnotation()).scan(packageNames);
+                            getScanner(registry, getProxyComponentAnnotationType())
+                                    .scan(packageNames);
                         });
     }
 
     protected ClassPathBeanDefinitionScanner getScanner(
             final BeanDefinitionRegistry registry,
-            final Class<? extends Annotation> markerAnnotation) {
-        return new ProxyComponentBeanDefinitionScanner(registry, markerAnnotation);
+            final Class<ProxyComponent> proxyComponentAnnotationType) {
+        return new ProxyComponentBeanDefinitionScanner(
+                registry,
+                proxyComponentAnnotationType,
+                beanFactory.getBean(ProxyInvocationHandlerBeanNameGenerator.class));
     }
 
-    protected Class<? extends Annotation> getProxyComponentAnnotation() {
+    protected Class<ProxyComponent> getProxyComponentAnnotationType() {
         return ProxyComponent.class;
     }
 
-    protected String[] getPackageNames(final MergedAnnotation<? extends Annotation> annotation) {
-        return ((EnableInterfaceProxy) annotation.synthesize()).basePackages();
+    protected String[] getPackageNames(final MergedAnnotation<EnableInterfaceProxy> annotation) {
+        return annotation.synthesize().basePackages();
     }
 
-    protected Class<? extends Annotation> getAnnotationType() {
+    protected Class<EnableInterfaceProxy> getFeatureEnableAnnotationType() {
         return EnableInterfaceProxy.class;
+    }
+
+    @Override
+    public void setBeanFactory(final BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
     }
 }
