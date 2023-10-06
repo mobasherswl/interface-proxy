@@ -1,6 +1,5 @@
-package com.mob.proxy;
+package com.mob.proxy.annotation;
 
-import com.mob.proxy.annotation.EnableInterfaceProxy;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
 

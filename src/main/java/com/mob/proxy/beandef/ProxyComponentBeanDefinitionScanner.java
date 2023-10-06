@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -15,7 +16,7 @@ public class ProxyComponentBeanDefinitionScanner extends ClassPathBeanDefinition
             final Class<? extends Annotation> annotationType) {
         super(registry, false);
         addIncludeFilter(new AnnotationTypeFilter(annotationType));
-        setBeanNameGenerator(new CustomAnnotationBeanNameGenerator(annotationType));
+        setBeanNameGenerator(getBeanNameGenerator(annotationType));
     }
 
     @Override
@@ -36,5 +37,10 @@ public class ProxyComponentBeanDefinitionScanner extends ClassPathBeanDefinition
 
     protected String getFactoryBeanClassName() {
         return ProxyComponentFactoryBean.class.getName();
+    }
+
+    protected BeanNameGenerator getBeanNameGenerator(
+            final Class<? extends Annotation> annotationType) {
+        return new CustomAnnotationBeanNameGenerator(annotationType);
     }
 }

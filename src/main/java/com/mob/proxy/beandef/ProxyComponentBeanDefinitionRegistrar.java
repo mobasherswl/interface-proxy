@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.type.AnnotationMetadata;
 
 public class ProxyComponentBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
@@ -15,19 +16,27 @@ public class ProxyComponentBeanDefinitionRegistrar implements ImportBeanDefiniti
         configMetadata.getAnnotations().stream(getAnnotationType())
                 .forEach(
                         annotation -> {
-                            String[] packageNames = annotation.synthesize().basePackages();
+                            String[] packageNames = getPackageNames(annotation);
 
-                            getScanner(registry, ProxyComponent.class).scan(packageNames);
+                            getScanner(registry, getProxyComponentAnnotation()).scan(packageNames);
                         });
     }
 
-    private Class<EnableInterfaceProxy> getAnnotationType() {
-        return EnableInterfaceProxy.class;
-    }
-
-    private ClassPathBeanDefinitionScanner getScanner(
+    protected ClassPathBeanDefinitionScanner getScanner(
             final BeanDefinitionRegistry registry,
             final Class<? extends Annotation> markerAnnotation) {
         return new ProxyComponentBeanDefinitionScanner(registry, markerAnnotation);
+    }
+
+    protected Class<? extends Annotation> getProxyComponentAnnotation() {
+        return ProxyComponent.class;
+    }
+
+    protected String[] getPackageNames(final MergedAnnotation<? extends Annotation> annotation) {
+        return ((EnableInterfaceProxy) annotation.synthesize()).basePackages();
+    }
+
+    protected Class<? extends Annotation> getAnnotationType() {
+        return EnableInterfaceProxy.class;
     }
 }
