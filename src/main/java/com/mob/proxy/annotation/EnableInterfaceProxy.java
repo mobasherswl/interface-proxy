@@ -1,6 +1,7 @@
 package com.mob.proxy.annotation;
 
 import com.mob.proxy.InterfaceProxyConfiguration;
+import com.mob.proxy.ProxyImportSelector;
 import com.mob.proxy.beandef.ProxyComponentBeanDefinitionRegistrar;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,11 +12,15 @@ import org.springframework.core.annotation.AliasFor;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import({InterfaceProxyConfiguration.class, ProxyComponentBeanDefinitionRegistrar.class})
+@Import(ProxyImportSelector.class)
 public @interface EnableInterfaceProxy {
     @AliasFor("basePackages")
     String[] value() default {};
 
     @AliasFor("value")
     String[] basePackages() default {};
+
+    Class<?>[] configImports() default {
+        InterfaceProxyConfiguration.class, ProxyComponentBeanDefinitionRegistrar.class
+    };
 }
