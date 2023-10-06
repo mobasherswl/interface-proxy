@@ -17,5 +17,5 @@ public @interface ProxyComponent {
     @AliasFor("value")
     String name() default "";
 
-    String handlerName();
+    String proxyMethodHandlerName();
 }
