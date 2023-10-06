@@ -1,7 +1,6 @@
 package com.mob.proxy.annotation;
 
 import com.mob.proxy.InterfaceProxyConfiguration;
-import com.mob.proxy.ProxyImportSelector;
 import com.mob.proxy.beandef.ProxyComponentBeanDefinitionRegistrar;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
