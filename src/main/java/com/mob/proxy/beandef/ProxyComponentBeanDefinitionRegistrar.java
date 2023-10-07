@@ -1,7 +1,6 @@
 package com.mob.proxy.beandef;
 
 import com.mob.proxy.annotation.EnableInterfaceProxy;
-import com.mob.proxy.annotation.ProxyComponent;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -18,34 +17,24 @@ public class ProxyComponentBeanDefinitionRegistrar
     @Override
     public void registerBeanDefinitions(
             final AnnotationMetadata configMetadata, final BeanDefinitionRegistry registry) {
-        configMetadata.getAnnotations().stream(getFeatureEnableAnnotationType())
+        configMetadata.getAnnotations().stream(getEnableFeatureAnnotationType())
                 .forEach(
                         annotation -> {
                             final String[] packageNames = getPackageNames(annotation);
 
-                            getScanner(registry, getProxyComponentAnnotationType())
-                                    .scan(packageNames);
+                            getScanner(registry).scan(packageNames);
                         });
     }
 
-    protected ClassPathBeanDefinitionScanner getScanner(
-            final BeanDefinitionRegistry registry,
-            final Class<ProxyComponent> proxyComponentAnnotationType) {
-        return new ProxyComponentBeanDefinitionScanner(
-                registry,
-                proxyComponentAnnotationType,
-                beanFactory.getBean(ProxyInvocationHandlerBeanNameGenerator.class));
-    }
-
-    protected Class<ProxyComponent> getProxyComponentAnnotationType() {
-        return ProxyComponent.class;
+    protected ClassPathBeanDefinitionScanner getScanner(final BeanDefinitionRegistry registry) {
+        return beanFactory.getBean(ClassPathBeanDefinitionScanner.class, registry);
     }
 
     protected String[] getPackageNames(final MergedAnnotation<EnableInterfaceProxy> annotation) {
         return annotation.synthesize().basePackages();
     }
 
-    protected Class<EnableInterfaceProxy> getFeatureEnableAnnotationType() {
+    protected Class<EnableInterfaceProxy> getEnableFeatureAnnotationType() {
         return EnableInterfaceProxy.class;
     }
 

@@ -1,30 +1,31 @@
 package com.mob.proxy.beandef;
 
 import com.mob.proxy.annotation.ProxyComponent;
-import com.mob.proxy.factory.ProxyComponentFactoryBean;
-import com.mob.proxy.handler.DefaultProxyInvocationHandler;
 import com.mob.proxy.handler.ProxyInvocationHandler;
-import java.lang.annotation.Annotation;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.support.*;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 public class ProxyComponentBeanDefinitionScanner extends ClassPathBeanDefinitionScanner {
     private final ProxyInvocationHandlerBeanNameGenerator proxyInvocationHandlerBeanNameGenerator;
+    private final Class<? extends FactoryBean> proxyComponentFactoryBeanClass;
+    private final Class<? extends ProxyInvocationHandler> proxyInvocationHandlerClass;
 
     public ProxyComponentBeanDefinitionScanner(
             final BeanDefinitionRegistry registry,
-            final Class<? extends Annotation> proxyComponentAnnotationType,
-            final ProxyInvocationHandlerBeanNameGenerator proxyInvocationHandlerBeanNameGenerator) {
+            final ProxyInvocationHandlerBeanNameGenerator proxyInvocationHandlerBeanNameGenerator,
+            final Class<? extends FactoryBean> proxyComponentFactoryBeanClass,
+            final Class<? extends ProxyInvocationHandler> proxyInvocationHandlerClass) {
         super(registry, false);
-        addIncludeFilter(new AnnotationTypeFilter(proxyComponentAnnotationType));
-        setBeanNameGenerator(getBeanNameGenerator(proxyComponentAnnotationType));
         this.proxyInvocationHandlerBeanNameGenerator = proxyInvocationHandlerBeanNameGenerator;
+        this.proxyComponentFactoryBeanClass = proxyComponentFactoryBeanClass;
+        this.proxyInvocationHandlerClass = proxyInvocationHandlerClass;
     }
 
     @Override
@@ -37,7 +38,7 @@ public class ProxyComponentBeanDefinitionScanner extends ClassPathBeanDefinition
     @Override
     protected void postProcessBeanDefinition(
             final AbstractBeanDefinition beanDefinition, final String beanName) {
-        beanDefinition.setBeanClassName(getProxyComponentFactoryBeanType().getName());
+        beanDefinition.setBeanClassName(proxyComponentFactoryBeanClass.getName());
         beanDefinition
                 .getConstructorArgumentValues()
                 .addGenericArgumentValue(((AnnotatedBeanDefinition) beanDefinition).getMetadata());
@@ -55,34 +56,22 @@ public class ProxyComponentBeanDefinitionScanner extends ClassPathBeanDefinition
             final BeanDefinitionHolder definitionHolder, final BeanDefinitionRegistry registry) {
         final AnnotatedBeanDefinition abd =
                 (AnnotatedBeanDefinition) definitionHolder.getBeanDefinition();
-        final String methodHandlerName = getMethodHandlerName(abd);
+        final String proxyMethodHandlerName = getProxyMethodHandlerName(abd);
         final String beanName =
-                proxyInvocationHandlerBeanNameGenerator.generateBeanName(methodHandlerName);
+                proxyInvocationHandlerBeanNameGenerator.generateBeanName(proxyMethodHandlerName);
 
         if (!registry.containsBeanDefinition(beanName)) {
             final BeanDefinition beanDefinition =
-                    BeanDefinitionBuilder.genericBeanDefinition(getProxyInvocationHandlerType())
-                            .addConstructorArgReference(methodHandlerName)
+                    BeanDefinitionBuilder.genericBeanDefinition(proxyInvocationHandlerClass)
+                            .addConstructorArgReference(proxyMethodHandlerName)
                             .getBeanDefinition();
 
             registry.registerBeanDefinition(beanName, beanDefinition);
         }
     }
 
-    protected Class<? extends FactoryBean> getProxyComponentFactoryBeanType() {
-        return ProxyComponentFactoryBean.class;
-    }
-
-    protected Class<? extends ProxyInvocationHandler> getProxyInvocationHandlerType() {
-        return DefaultProxyInvocationHandler.class;
-    }
-
-    protected BeanNameGenerator getBeanNameGenerator(
-            final Class<? extends Annotation> proxyComponentAnnotation) {
-        return new CustomAnnotationBeanNameGenerator(proxyComponentAnnotation);
-    }
-
-    protected String getMethodHandlerName(final AnnotatedBeanDefinition annotatedBeanDefinition) {
+    protected String getProxyMethodHandlerName(
+            final AnnotatedBeanDefinition annotatedBeanDefinition) {
         return annotatedBeanDefinition
                 .getMetadata()
                 .getAnnotations()
